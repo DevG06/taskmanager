@@ -50,6 +50,11 @@ public class TaskRepository {
         return jdbc.query(sql, TASK_ROW_MAPPER);
     }
 
+    public List<Task> findByCompleted(boolean completed) {
+        String sql = "SELECT id, title, description, completed, created_at FROM tasks WHERE completed = ? ORDER BY created_at, id";
+        return jdbc.query(sql, TASK_ROW_MAPPER, completed);
+    }
+
     public boolean deleteById(Long id) {
         String sql = "DELETE FROM tasks WHERE id = ?";
         int rows = jdbc.update(sql, id);

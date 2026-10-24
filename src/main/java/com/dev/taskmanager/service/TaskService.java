@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.dev.taskmanager.dto.CreateTaskRequest;
+import com.dev.taskmanager.dto.TaskResponse;
 import com.dev.taskmanager.exception.TaskNotFoundException;
 import com.dev.taskmanager.model.Task;
 import com.dev.taskmanager.repository.TaskRepository;
@@ -18,16 +19,26 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    private TaskResponse toTaskResponse(Task task) {
+        return new TaskResponse(task.getId(), task.getTitle(), task.getDescription(), task.isCompleted(), task.getCreatedAt());
     }
 
-    public Task getTask(Long id) {
-        return taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+    public List<TaskResponse> getAllTasks(Boolean completed) {
+        List<Task> tasks;
+        if(completed == null) {
+            tasks = taskRepository.findAll();
+        } else {
+            tasks = taskRepository.findByCompleted(completed);
+        }
+        return tasks.stream().map(this::toTaskResponse).toList();
     }
 
-    public Task completeTask(Long id) {
-        return taskRepository.markCompleted(id).orElseThrow(() -> new TaskNotFoundException(id));
+    public TaskResponse getTask(Long id) {
+        return taskRepository.findById(id).map(this::toTaskResponse).orElseThrow(() -> new TaskNotFoundException(id));
+    }
+
+    public TaskResponse completeTask(Long id) {
+        return taskRepository.markCompleted(id).map(this::toTaskResponse).orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     public void deleteTask(Long id) {
@@ -36,7 +47,7 @@ public class TaskService {
         }
     }
 
-    public Task createTask(CreateTaskRequest request) {
+    public TaskResponse createTask(CreateTaskRequest request) {
         if (request.title() == null || request.title().isBlank()) {
             throw new IllegalArgumentException("Title is mandatory");
         }
@@ -44,6 +55,6 @@ public class TaskService {
         task.setTitle(request.title().trim());
         task.setDescription(request.description());
         task.setCompleted(request.completed());
-        return taskRepository.save(task);
+        return toTaskResponse(taskRepository.save(task));
     }
 }
