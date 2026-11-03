@@ -3,6 +3,7 @@ package com.dev.taskmanager.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dev.taskmanager.dto.CreateTaskRequest;
 import com.dev.taskmanager.dto.TaskResponse;
@@ -26,9 +27,9 @@ public class TaskService {
     public List<TaskResponse> getAllTasks(Boolean completed) {
         List<Task> tasks;
         if(completed == null) {
-            tasks = taskRepository.findAll();
+            tasks = taskRepository.findAllByOrderByCreatedAtAscIdAsc();
         } else {
-            tasks = taskRepository.findByCompleted(completed);
+            tasks = taskRepository.findByCompletedOrderByCreatedAtAscIdAsc(completed);
         }
         return tasks.stream().map(this::toTaskResponse).toList();
     }
@@ -37,14 +38,17 @@ public class TaskService {
         return taskRepository.findById(id).map(this::toTaskResponse).orElseThrow(() -> new TaskNotFoundException(id));
     }
 
+    @Transactional 
     public TaskResponse completeTask(Long id) {
-        return taskRepository.markCompleted(id).map(this::toTaskResponse).orElseThrow(() -> new TaskNotFoundException(id));
+        Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+        task.setCompleted(true);
+        return toTaskResponse(task);
     }
 
+    @Transactional
     public void deleteTask(Long id) {
-        if (!taskRepository.deleteById(id)) {
-            throw new TaskNotFoundException(id);
-        }
+        Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+        taskRepository.delete(task);
     }
 
     public TaskResponse createTask(CreateTaskRequest request) {

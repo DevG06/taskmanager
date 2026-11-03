@@ -2,11 +2,26 @@ package com.dev.taskmanager.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.Generated;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="tasks")
 public class Task {
+    @Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String description;
     private boolean completed;
+    @Column(insertable = false, updatable = false)
+    @Generated 
     private LocalDateTime createdAt;
 
     public LocalDateTime getCreatedAt() {
@@ -61,6 +76,5 @@ public class Task {
         sb.append('}');
         return sb.toString();
     }
-
 
 }
