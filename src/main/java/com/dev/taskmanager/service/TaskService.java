@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dev.taskmanager.dto.CreateTaskRequest;
 import com.dev.taskmanager.dto.TaskResponse;
 import com.dev.taskmanager.exception.TaskNotFoundException;
+import com.dev.taskmanager.mapper.TaskMapper;
 import com.dev.taskmanager.model.Task;
 import com.dev.taskmanager.repository.TaskRepository;
 
@@ -15,13 +16,11 @@ import com.dev.taskmanager.repository.TaskRepository;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
-    }
-
-    private TaskResponse toTaskResponse(Task task) {
-        return new TaskResponse(task.getId(), task.getTitle(), task.getDescription(), task.isCompleted(), task.getCreatedAt());
+        this.taskMapper = taskMapper;
     }
 
     public List<TaskResponse> getAllTasks(Boolean completed) {
@@ -31,18 +30,18 @@ public class TaskService {
         } else {
             tasks = taskRepository.findByCompletedOrderByCreatedAtAscIdAsc(completed);
         }
-        return tasks.stream().map(this::toTaskResponse).toList();
+        return tasks.stream().map(taskMapper::toResponse).toList();
     }
 
     public TaskResponse getTask(Long id) {
-        return taskRepository.findById(id).map(this::toTaskResponse).orElseThrow(() -> new TaskNotFoundException(id));
+        return taskRepository.findById(id).map(taskMapper::toResponse).orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     @Transactional 
     public TaskResponse completeTask(Long id) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
         task.setCompleted(true);
-        return toTaskResponse(task);
+        return taskMapper.toResponse(task);
     }
 
     @Transactional
@@ -55,10 +54,8 @@ public class TaskService {
         if (request.title() == null || request.title().isBlank()) {
             throw new IllegalArgumentException("Title is mandatory");
         }
-        Task task = new Task();
-        task.setTitle(request.title().trim());
-        task.setDescription(request.description());
-        task.setCompleted(request.completed());
-        return toTaskResponse(taskRepository.save(task));
+        Task task = taskMapper.toEntity(request);
+        task.setTitle(task.getTitle().trim());
+        return taskMapper.toResponse(taskRepository.save(task));
     }
 }
