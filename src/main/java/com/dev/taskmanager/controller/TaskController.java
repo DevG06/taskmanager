@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dev.taskmanager.dto.CreateTaskRequest;
 import com.dev.taskmanager.dto.TaskResponse;
+import com.dev.taskmanager.dto.UpdateTaskRequest;
 import com.dev.taskmanager.service.TaskService;
 
 @RestController 
@@ -41,9 +42,9 @@ public class TaskController {
         return taskService.createTask(request);
     }
 
-    @PatchMapping("/{id}/complete")
-    public TaskResponse completeTask(@PathVariable Long id) {
-        return taskService.completeTask(id);
+    @PatchMapping("/{id}")
+    public TaskResponse updateTask(@PathVariable Long id, @RequestBody UpdateTaskRequest request) {
+        return taskService.updateTask(id, request);
     }
 
     @DeleteMapping("/{id}")
