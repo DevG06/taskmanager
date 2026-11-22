@@ -45,9 +45,6 @@ public class TaskService {
     }
 
     public TaskResponse createTask(CreateTaskRequest request) {
-        if (request.title() == null || request.title().isBlank()) {
-            throw new IllegalArgumentException("Title is mandatory");
-        }
         Task task = taskMapper.toEntity(request);
         task.setTitle(task.getTitle().trim());
         return taskMapper.toResponse(taskRepository.save(task));
@@ -55,9 +52,6 @@ public class TaskService {
 
     @Transactional 
     public TaskResponse updateTask(Long id, UpdateTaskRequest request) {
-        if (request.title() != null && request.title().isBlank()) {
-            throw new IllegalArgumentException("Title can't be blank");
-        }
         Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
         taskMapper.updateEntityFromRequest(request, task);
         task.setTitle(task.getTitle().trim());

@@ -1,5 +1,10 @@
 package com.dev.taskmanager.dto;
 
-public record CreateTaskRequest(String title, String description, boolean completed) {
+import jakarta.validation.constraints.NotBlank;
 
-}
+public record CreateTaskRequest(
+    @NotBlank(message = "Title cannot be blank")
+    String title,
+    String description, 
+    boolean completed
+) {}

@@ -20,6 +20,8 @@ import com.dev.taskmanager.dto.TaskResponse;
 import com.dev.taskmanager.dto.UpdateTaskRequest;
 import com.dev.taskmanager.service.TaskService;
 
+import jakarta.validation.Valid;
+
 @RestController 
 @RequestMapping("/tasks")
 public class TaskController {
@@ -41,7 +43,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> createTask(@RequestBody CreateTaskRequest request) {
+    public ResponseEntity<TaskResponse> createTask(@RequestBody @Valid CreateTaskRequest request) {
         TaskResponse taskResponse = taskService.createTask(request);
         URI locUri = ServletUriComponentsBuilder
                         .fromCurrentRequestUri()
@@ -52,7 +54,7 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id, @RequestBody UpdateTaskRequest request) {
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id, @RequestBody @Valid UpdateTaskRequest request) {
         return ResponseEntity.ok(taskService.updateTask(id, request));
     }
 
